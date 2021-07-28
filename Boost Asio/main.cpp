@@ -33,12 +33,51 @@ void print(const boost::system::error_code& ec,
 	}
 }
 
+class Printer
+{
+public:
+	Printer(boost::asio::io_context& io)
+		: timer_(io, boost::asio::chrono::seconds(1))
+	{
+		//set async_wait for timer
+		timer_.async_wait([this](const boost::system::error_code& ec)
+			{
+				print();
+			});
+	}
 
+	~Printer()
+	{
+		std::cout << counter_;
+	}
+
+	//member-function 'print' is a callback handler
+	
+	void print()
+	{
+		if(counter_ < 5)
+		{
+			std::cout << counter_++ << std::endl;
+
+			timer_.expires_at(timer_.expiry() + boost::asio::chrono::seconds(1));
+
+			timer_.async_wait([this](const boost::system::error_code& ec)
+				{
+					print();
+				});
+		}
+	}
+private:
+	boost::asio::steady_timer timer_;
+	int counter_ = 0;
+};
 
 int main()
 {
-	int counter = 0;
 	boost::asio::io_context io;
+
+	
+	/*int counter = 0;
 	boost::asio::steady_timer timer(io, boost::asio::chrono::seconds(1));
 
 	//first call of print function
@@ -51,5 +90,9 @@ int main()
 	io.run();
 
 	std::cout << counter << std::endl;
+	*/
+
+	Printer printer(io);
+	io.run();
 	
 }
