@@ -23,5 +23,8 @@
     <ClInclude Include="synch and asynch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="handler_as_a_function_member.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

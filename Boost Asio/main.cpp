@@ -1,98 +1,120 @@
 
 #include <iostream>
 #include <boost/asio.hpp>
+#include <boost/thread/thread.hpp>
 
 
 /*
- * Handler must have error_code as first argument
- * To reset timer we sent reference into function
+ * Callback handlers will only be called from threads
+ * that are currently calling run()
+ *
+ * We need pool of threads and method of synchronisation when handlers might
+ * be accessing a shared, thread-unsafe resource
  */
 
-void print(const boost::system::error_code& ec,
-	boost::asio::steady_timer& timer, int& counter)
-{
-	if(counter < 5)
-	{
-		std::cout << counter << std::endl;
-		++counter;
-
-		//calculate new expiry time relative to the old
-		timer.expires_at(timer.expiry() + boost::asio::chrono::seconds(1));
-
-		/*
-		 * steady_timer::async_wait() function expects a handler function
-		 * (or function object) with the signature - void(const ::error_code&)
-		 *
-		 * Use lambda to create function object with additional params
-		 */
-		timer.async_wait(
-			[&timer, &counter](const boost::system::error_code& ec)
-			{
-				print(ec, timer, counter);
-			});
-	}
-}
 
 class Printer
 {
+	using error_code = boost::system::error_code;
 public:
 	Printer(boost::asio::io_context& io)
-		: timer_(io, boost::asio::chrono::seconds(1))
+		: strand_(boost::asio::make_strand(io)),
+	timer1_(io, boost::asio::chrono::seconds(1)),
+	timer2_(io, boost::asio::chrono::seconds(1))
 	{
-		//set async_wait for timer
-		timer_.async_wait([this](const boost::system::error_code& ec)
+		/*
+		 * 'bind_executor()' function returns a new handler that
+		 * automatically dispatches its contained handler through the
+		 * strand object. By binding the handlers to the same strand,
+		 * we ensuring that they cannot execute concurrently
+		 */
+
+		
+		timer1_.async_wait(boost::asio::bind_executor(strand_,
+			[this](const error_code&)
 			{
-				print();
-			});
+				print1();
+			}));
+
+		timer2_.async_wait(boost::asio::bind_executor(strand_,
+			[this](const error_code&)
+			{
+				print2();
+			}));
+	}
+
+	void print1()
+	{
+		if(count_ < 10)
+		{
+			std::cout << "Timer1: " << count_++ << std::endl;
+
+			timer1_.expires_at(timer1_.expiry() + boost::asio::chrono::seconds(1));
+			timer1_.async_wait(boost::asio::bind_executor(strand_,
+				[this](const error_code&)
+				{
+					print1();
+				}));
+		}
+	}
+
+	void print2()
+	{
+		if(count_ < 10)
+		{
+			std::cout << "Timer2: " << count_++ << std::endl;
+
+			timer2_.expires_at(timer2_.expiry() + boost::asio::chrono::seconds(1));
+			timer2_.async_wait(boost::asio::bind_executor(strand_,
+				[this](const error_code&)
+				{
+					print2();
+				}));
+		}
 	}
 
 	~Printer()
 	{
-		std::cout << counter_;
+		std::cout << count_ << '\n';
 	}
 
-	//member-function 'print' is a callback handler
+/// <summary>
+///				In a multithreaded program, the handlers for asynchronous
+///				operations should be synchronised if they access shared
+///				resources
+/// </summary>
 	
-	void print()
-	{
-		if(counter_ < 5)
-		{
-			std::cout << counter_++ << std::endl;
-
-			timer_.expires_at(timer_.expiry() + boost::asio::chrono::seconds(1));
-
-			timer_.async_wait([this](const boost::system::error_code& ec)
-				{
-					print();
-				});
-		}
-	}
 private:
-	boost::asio::steady_timer timer_;
-	int counter_ = 0;
+
+	/*
+	 * The 'strand' class guarantees that, for those handlers that are
+	 * dispatched through it, an executing handler will be allowed to
+	 * complete before the next one is started.
+	 * Other handlers can execute concurrently
+	 */
+	
+	boost::asio::strand<boost::asio::io_context::executor_type> strand_;
+	boost::asio::steady_timer timer1_,
+		timer2_;
+	int count_ = 0;
 };
+
 
 int main()
 {
 	boost::asio::io_context io;
-
-	
-	/*int counter = 0;
-	boost::asio::steady_timer timer(io, boost::asio::chrono::seconds(1));
-
-	//first call of print function
-	timer.async_wait(
-		[&timer, &counter](const boost::system::error_code& ec)
+	Printer printer(io);
+	boost::thread t([&io]()
 		{
-			print(ec, timer, counter);
+			io.run();
 		});
 
-	io.run();
-
-	std::cout << counter << std::endl;
-	*/
-
-	Printer printer(io);
-	io.run();
+	/*
+	 * 'run()' is called from two threads: the main thread and one additional.
+	 * The background thread will not exit until all asynchronous operations
+	 * have completed
+	 */
 	
+	io.run();
+	t.join();
 }
