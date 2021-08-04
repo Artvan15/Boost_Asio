@@ -156,6 +156,7 @@
   <ItemGroup>
     <ClInclude Include="handler_as_a_function_member.h" />
     <ClInclude Include="synch and asynch.h" />
+    <ClInclude Include="Synchronising_handlers_in_multithreaded programs.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
