@@ -15,21 +15,21 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="Server.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="synch and asynch.h">
+    <ClInclude Include="Server.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="handler_as_a_function_member.h">
+    <ClInclude Include="tcpAsyncServer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Synchronising_handlers_in_multithreaded programs.h">
+    <ClInclude Include="tcpConnection.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Client.h">
+    <ClInclude Include="CurrentDate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

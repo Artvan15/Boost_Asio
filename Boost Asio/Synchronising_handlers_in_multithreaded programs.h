@@ -49,7 +49,7 @@ namespace multithreaded
 		{
 			if (count_ < 10)
 			{
-				std::cout << "Timer1: " << count_++ << std::endl;
+				std::cout << "Thread: " << boost::this_thread::get_id() << "\tTimer1: " << count_++ << std::endl;
 
 				timer1_.expires_at(timer1_.expiry() + boost::asio::chrono::seconds(1));
 				timer1_.async_wait(boost::asio::bind_executor(strand_,
@@ -64,7 +64,7 @@ namespace multithreaded
 		{
 			if (count_ < 10)
 			{
-				std::cout << "Timer2: " << count_++ << std::endl;
+				std::cout << "Thread: " << boost::this_thread::get_id() << "\tTimer2: " << count_++ << std::endl;
 
 				timer2_.expires_at(timer2_.expiry() + boost::asio::chrono::seconds(1));
 				timer2_.async_wait(boost::asio::bind_executor(strand_,

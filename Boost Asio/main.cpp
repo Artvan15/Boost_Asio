@@ -1,14 +1,9 @@
 
-#include <iostream>
-#include <boost/asio.hpp>
-#include <boost/thread/thread.hpp>
-
-
-
-
+#include "Client.h"	
 
 int main()
 {
-	
-
+	boost::asio::io_context io;
+	Client client(io, "localhost", "daytime");
+	client.Connect();
 }

@@ -32,7 +32,7 @@ namespace synch_asynch
 		std::cout << "Hello, Boost!\n";
 
 
-		t.expires_after(boost::asio::chrono::seconds(4));
+		t.expires_after(boost::asio::chrono::seconds(20));
 		t.async_wait(&func);
 
 
@@ -42,16 +42,21 @@ namespace synch_asynch
 		 *
 		 *  we pass the func callback handler that was defined above
 		 *
+		 *  timer starts right after ::async_wait was called
+		 *
 		 *  The asio library provides a guarantee
 		 *  that callback handlers will only be called from threads
-		 *  that are currently calling io_context::run()
+		 *  that are currently calling io_context::run(). And if io::context::run() is running
 		 *
 		 *  The io_context::run() function will also continue to run
-		 *  while there is still "work" to do
+		 *  while there is still "work" to do. io_context::run() will only finish if all handlers complete their work.
 		 */
 
 		boost::asio::steady_timer t2(io, boost::asio::chrono::seconds(6));
 		t2.async_wait(&func2);
+		boost::asio::steady_timer t3(io, boost::asio::chrono::seconds(15));
+		t3.wait();
+		std::cout << "main\n";
 		io.run();
 	}
 
