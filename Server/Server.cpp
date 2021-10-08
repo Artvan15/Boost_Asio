@@ -1,12 +1,21 @@
 
-#include "tcpAsyncServer.h"
+#include "Server.h"
+#include "CustomMsgTypes.h"
+
+using namespace net;
+
+
 
 
 int main()
 {
-	boost::asio::io_context io;
-	tcpAsyncServer server(io, 13);
+	setlocale(LC_ALL, "");
+	Server<CustomMsgTypes> server;
+	server.Run(80);
 
-	
-	io.run();
+	while (true)
+	{
+		server.Update();
+	}
+
 }
