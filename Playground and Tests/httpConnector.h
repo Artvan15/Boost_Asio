@@ -99,14 +99,3 @@ private:
 	std::string message;
 };
 
-template<typename T>
-class PosholNahui
-{
-	void awesomeC();
-};
-
-template <typename T>
-void PosholNahui<T>::awesomeC()
-{
-	
-}

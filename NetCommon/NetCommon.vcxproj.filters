@@ -45,5 +45,8 @@
     <ClInclude Include="CustomMsgTypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MessageWithConnection.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

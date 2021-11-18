@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Connection.h"
+#include "MessageWithConnection.h"
 
 namespace net
 {

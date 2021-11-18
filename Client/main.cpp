@@ -3,6 +3,7 @@
 #include <Client.h>
 #include "CustomMsgTypes.h"
 
+
 int main()
 {
 	setlocale(LC_ALL, "");
@@ -31,7 +32,10 @@ int main()
 		if (key[1] && !old_key[1]) client.MessageAll();
 		if (key[2] && !old_key[2]) bQuit = true;
 
-		for (int i = 0; i != 3; ++i) old_key[i] = key[i];
+		for (int i = 0; i != 3; ++i)
+		{
+			old_key[i] = key[i];
+		}
 
 
 		if(client.IsConnected())

@@ -149,10 +149,8 @@ namespace net
 			!messages_in_.Empty(); ++message_count)
 		{
 			//grab front income message
-			auto message = messages_in_.PopFront();
-
 			//handle the message
-			OnMessage(std::move(message));
+			OnMessage(messages_in_.PopFront());
 		}
 	}
 
@@ -190,7 +188,7 @@ namespace net
 		connections_.insert(connection);
 		std::cout << "[" << connection->GetId() << "] Connection Approved\n";
 
-		//Message for connected client
+		//Message for connected client (without body)
 		Message<CustomMsgTypes> message_for_client{ {CustomMsgTypes::ServerAccept} };
 		MessageClient(connection, message_for_client);
 
