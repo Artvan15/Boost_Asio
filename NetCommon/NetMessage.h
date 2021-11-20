@@ -18,7 +18,6 @@
 
 namespace net
 {
-
 	// Message header is in the start of all messages. User defined enum
 	// by himself. Then he can assign values only from this enum to id 
 	template<typename T>

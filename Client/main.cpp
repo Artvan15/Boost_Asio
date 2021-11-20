@@ -1,6 +1,8 @@
 
 #include <iostream>
 #include <Client.h>
+#include <windows.h>
+
 #include "CustomMsgTypes.h"
 
 
