@@ -91,7 +91,6 @@ T& ThreadSafeQueue<T>::Back()
 {
 	std::lock_guard<std::mutex> lock_guard(mutex_);
 	return queue_.back();
-
 }
 
 template <typename T>
@@ -111,45 +110,57 @@ bool ThreadSafeQueue<T>::Empty() const
 template <typename T>
 void ThreadSafeQueue<T>::PushFront(const T& value)
 {
-	std::lock_guard<std::mutex> lock_guard(mutex_);
-	queue_.push_front(value);
+	{
+		std::lock_guard<std::mutex> lock_guard(mutex_);
+		queue_.push_front(value);
+	}
 }
 
 template <typename T>
 void ThreadSafeQueue<T>::PushFront(T&& value)
 {
-	std::lock_guard<std::mutex> lock_guard(mutex_);
-	queue_.push_front(value);
+	{
+		std::lock_guard<std::mutex> lock_guard(mutex_);
+		queue_.push_front(value);
+	}
 }
 
 template <typename T>
 void ThreadSafeQueue<T>::PushBack(const T& value)
 {
-	std::lock_guard<std::mutex> lock_guard(mutex_);
-	queue_.push_back(value);
+	{
+		std::lock_guard<std::mutex> lock_guard(mutex_);
+		queue_.push_back(value);
+	}
 }
 
 template <typename T>
 void ThreadSafeQueue<T>::PushBack(T&& value)
 {
-	std::lock_guard<std::mutex> lock_guard(mutex_);
-	queue_.push_back(value);
+	{
+		std::lock_guard<std::mutex> lock_guard(mutex_);
+		queue_.push_back(value);
+	}
 }
 
 template <typename T>
 template <typename ... Args>
 void ThreadSafeQueue<T>::EmplaceBack(Args&&... args)
 {
-	std::lock_guard<std::mutex> lock_guard(mutex_);
-	queue_.emplace_back(std::forward<Args>(args)...);
+	{
+		std::lock_guard<std::mutex> lock_guard(mutex_);
+		queue_.emplace_back(std::forward<Args>(args)...);
+	}
 }
 
 template <typename T>
 template <typename ... Args>
 void ThreadSafeQueue<T>::EmplaceFront(Args&&... args)
 {
-	std::lock_guard<std::mutex> lock_guard(mutex_);
-	queue_.emplace_front(std::forward<Args>(args)...);
+	{
+		std::lock_guard<std::mutex> lock_guard(mutex_);
+		queue_.emplace_front(std::forward<Args>(args)...);
+	}
 }
 
 template <typename T>

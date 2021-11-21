@@ -15,18 +15,21 @@ namespace net
 		ConnectionServer(boost::asio::io_context& io,
 			boost::asio::ip::tcp::socket&& socket,
 			ThreadSafeQueue<MessageWithConnection<T>>& message_in,
-			uint32_t id)
+			uint32_t id,
+			std::condition_variable& condition)
 				: Connection<T>(io, std::move(socket), this),
-					message_in_(message_in), id_(id) {}
+					message_in_(message_in), id_(id), condition_variable_(condition) {}
 
 	public:
 		static std::shared_ptr<ConnectionServer<T>> Create(
 			boost::asio::io_context& io,
 			boost::asio::ip::tcp::socket&& socket,
 			ThreadSafeQueue<MessageWithConnection<T>>& message_in,
-			uint32_t id)
+			uint32_t id,
+			std::condition_variable& condition)
 		{
-			return std::shared_ptr<ConnectionServer<T>>(new ConnectionServer<T>(io, std::move(socket), message_in, id));
+			return std::shared_ptr<ConnectionServer<T>>(
+				new ConnectionServer<T>(io, std::move(socket), message_in, id, condition));
 		}
 		
 		uint32_t GetId() const
@@ -39,11 +42,13 @@ namespace net
 		{
 			//Create MessageWithConnection and push into queue
 			message_in_.EmplaceBack(message, this->shared_from_this());
+			condition_variable_.notify_one();
 		}
 
 	private:
 		//client stores queue of income message
 		ThreadSafeQueue<MessageWithConnection<T>>& message_in_;
+		std::condition_variable& condition_variable_;
 		uint32_t id_ = 0;
 	};
 

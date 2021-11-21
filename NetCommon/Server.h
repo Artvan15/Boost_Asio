@@ -69,13 +69,15 @@ namespace net
 		void OnMessage(std::shared_ptr<MessageWithConnection<T>>&& income_message);
 		
 
-	private:		
-		std::set<std::shared_ptr<ConnectionServer<T>>> connections_;
-		ThreadSafeQueue<MessageWithConnection<T>> messages_in_;	
+	private:
 		boost::asio::io_context io_;
 		boost::asio::ip::tcp::acceptor acceptor_;
+		std::condition_variable condition_variable_;
+		std::set<std::shared_ptr<ConnectionServer<T>>> connections_;
+		ThreadSafeQueue<MessageWithConnection<T>> messages_in_;
 		uint32_t new_connection_id = 0;
 		std::thread thread_;
+		std::mutex mutex_for_queue_;
 	};
 
 
@@ -145,6 +147,10 @@ namespace net
 	template <typename T>
 	void Server<T>::Update(size_t max_messages)
 	{
+		//wait for insertion in queue
+		std::unique_lock<std::mutex> unique_lock(mutex_for_queue_);
+		condition_variable_.wait(unique_lock);
+
 		for (size_t message_count = 0; message_count < max_messages &&
 			!messages_in_.Empty(); ++message_count)
 		{
@@ -167,7 +173,8 @@ namespace net
 						" : " << socket.remote_endpoint().port() << std::endl;
 
 					//create shared_ptr<ConnectionServer<T> and pass it to function
-					OnClientConnected(ConnectionServer<T>::Create(io_, std::move(socket), messages_in_, new_connection_id++));
+					OnClientConnected(ConnectionServer<T>::Create(
+						io_, std::move(socket), messages_in_, new_connection_id++, condition_variable_));
 				}
 				else
 				{
@@ -179,6 +186,7 @@ namespace net
 
 			});
 	}
+
 
 	template <typename T>
 	bool Server<T>::OnClientConnected(std::shared_ptr<ConnectionServer<T>> connection)
@@ -202,6 +210,7 @@ namespace net
 
 		return true;
 	}
+
 
 	template <typename T>
 	void Server<T>::OnClientDisconnected(uint32_t id)
