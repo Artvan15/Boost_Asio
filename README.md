@@ -16,7 +16,8 @@ cmake --build .\out\build
 ```
 
 ## Project
-By default server use 80 port. 
+By default server use 80 port.
+![GIF](images/gif.git?raw=true "Gif")
 
 Explanation on how async sending work
 ![Alt text](images/async.png?raw=true "Async")
