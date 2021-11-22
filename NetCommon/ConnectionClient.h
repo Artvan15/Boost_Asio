@@ -15,7 +15,7 @@ namespace net
 		//pointer to this, so that base class can can call method in child class
 		ConnectionClient(boost::asio::io_context& io,
 			ThreadSafeQueue<Message<T>>& message_in)
-			: Connection<T, ConnectionClient<T>>(io, boost::asio::ip::tcp::socket(io), this),
+			: Connection<T, ConnectionClient<T>>(io, boost::asio::ip::tcp::socket(io)),
 				message_in_(message_in) {}
 
 	public:
