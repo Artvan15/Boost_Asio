@@ -14,11 +14,9 @@ namespace net
 	{			
 	protected:
 		Connection(boost::asio::io_context& io,
-			boost::asio::ip::tcp::socket&& socket,
-			Connection<T, Derived>* derived)
-				: io_(io), socket_(std::move(socket)), derived_(derived) {}
+			boost::asio::ip::tcp::socket&& socket)
+				: io_(io), socket_(std::move(socket)) {}
 	public:
-		virtual ~Connection() = default;
 
 		//Close socket. Add this task to token queue in io
 		void Disconnect();
@@ -64,9 +62,6 @@ namespace net
 		boost::system::error_code er;
 		boost::asio::io_context& io_;
 		boost::asio::ip::tcp::socket socket_;
-
-		//ptr pointing to derived class
-		Connection<T, Derived>* derived_;
 		
 		//temporary income message
 		Message<T> temp_message;
@@ -125,7 +120,7 @@ namespace net
 					else
 					{
 						//message is complete without a header
-						derived_->AddMessageToIncomeQueue(temp_message);
+						AddMessageToIncomeQueue(temp_message);
 						ReadHeader();
 					}
 				}
@@ -178,7 +173,7 @@ namespace net
 				if (!er)
 				{
 					//send complete message to derived class (client or server)
-					derived_->AddMessageToIncomeQueue(temp_message);
+					AddMessageToIncomeQueue(temp_message);
 					ReadHeader();
 				}
 				else

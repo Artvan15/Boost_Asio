@@ -21,7 +21,7 @@ namespace net
 			ThreadSafeQueue<MessageWithConnection<T>>& message_in,
 			uint32_t id,
 			std::condition_variable& condition)
-				: Connection<T, ConnectionServer<T>>(io, std::move(socket), this),
+				: Connection<T, ConnectionServer<T>>(io, std::move(socket)),
 					message_in_(message_in), id_(id), condition_variable_(condition) {}
 
 	public:
