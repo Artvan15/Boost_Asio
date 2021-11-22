@@ -9,13 +9,13 @@
 namespace net
 {
 	//Base class for "ConnectionClient" and for "ConnectionServer"
-	template<typename T>
+	template<typename T, typename Derived>
 	class Connection
 	{			
 	protected:
 		Connection(boost::asio::io_context& io,
 			boost::asio::ip::tcp::socket&& socket,
-			Connection<T>* derived)
+			Connection<T, Derived>* derived)
 				: io_(io), socket_(std::move(socket)), derived_(derived) {}
 	public:
 		virtual ~Connection() = default;
@@ -58,7 +58,7 @@ namespace net
 		void WriteBody();
 
 		//called through derived_ pointer to child
-		virtual void AddMessageToIncomeQueue(const Message<T>& message) = 0;
+		void AddMessageToIncomeQueue(const Message<T>& message);
 		
 	protected:
 		boost::system::error_code er;
@@ -66,7 +66,7 @@ namespace net
 		boost::asio::ip::tcp::socket socket_;
 
 		//ptr pointing to derived class
-		Connection<T>* derived_;
+		Connection<T, Derived>* derived_;
 		
 		//temporary income message
 		Message<T> temp_message;
@@ -78,8 +78,8 @@ namespace net
 
 
 
-	template <typename T>
-	void Connection<T>::Disconnect()
+	template<typename T, typename Derived>
+	void Connection<T, Derived>::Disconnect()
 	{
 		if (IsConnected())
 		{
@@ -91,8 +91,8 @@ namespace net
 		}
 	}
 
-	template <typename T>
-	void Connection<T>::Send(const Message<T>& message)
+	template<typename T, typename Derived>
+	void Connection<T, Derived>::Send(const Message<T>& message)
 	{
 		//add this function to token queue (in other thread)
 		boost::asio::post(io_,
@@ -109,8 +109,8 @@ namespace net
 			});
 	}
 
-	template <typename T>
-	void Connection<T>::ReadHeader()
+	template<typename T, typename Derived>
+	void Connection<T, Derived>::ReadHeader()
 	{
 		boost::asio::async_read(socket_, boost::asio::buffer(&temp_message.header, sizeof(MessageHeader<T>)),
 			[this](const boost::system::error_code& er, size_t bytes_transferred)
@@ -137,8 +137,8 @@ namespace net
 			});
 	}
 
-	template <typename T>
-	void Connection<T>::WriteHeader()
+	template<typename T, typename Derived>
+	void Connection<T, Derived>::WriteHeader()
 	{
 		if (!message_out_.Empty())
 		{
@@ -169,8 +169,8 @@ namespace net
 	}
 
 
-	template <typename T>
-	void Connection<T>::ReadBody()
+	template<typename T, typename Derived>
+	void Connection<T, Derived>::ReadBody()
 	{
 		boost::asio::async_read(socket_, boost::asio::buffer(temp_message.body.data(), temp_message.header.size),
 			[this](const boost::system::error_code& er, size_t bytes_transferred)
@@ -190,8 +190,8 @@ namespace net
 	}
 
 
-	template <typename T>
-	void Connection<T>::WriteBody()
+	template<typename T, typename Derived>
+	void Connection<T, Derived>::WriteBody()
 	{
 		boost::asio::async_write(socket_, boost::asio::buffer(message_out_.Front().body.data(), message_out_.Front().header.size),
 			[this](const boost::system::error_code& er, size_t bytes_transferred)
@@ -209,4 +209,10 @@ namespace net
 			});
 	}
 
+	//static polymorphism
+	template <typename T, typename Derived>
+	void Connection<T, Derived>::AddMessageToIncomeQueue(const Message<T>& message)
+	{
+		static_cast<Derived*>(this)->AddMessageToIncomeQueue(message);
+	}
 }

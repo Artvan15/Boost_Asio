@@ -5,14 +5,17 @@
 namespace net
 {
 	template<typename T>
-	class ConnectionClient : public Connection<T>
+	class ConnectionClient : public Connection<T, ConnectionClient<T>>
 	{
+		//friend access only for special Connection class
+		friend class Connection<T, ConnectionClient<T>>;
+
 	protected:
 		//Sends io, new created socket connected to io,
 		//pointer to this, so that base class can can call method in child class
 		ConnectionClient(boost::asio::io_context& io,
 			ThreadSafeQueue<Message<T>>& message_in)
-			: Connection<T>(io, boost::asio::ip::tcp::socket(io), this),
+			: Connection<T, ConnectionClient<T>>(io, boost::asio::ip::tcp::socket(io), this),
 				message_in_(message_in) {}
 
 	public:
@@ -29,7 +32,7 @@ namespace net
 
 	private:
 		//called by "Connection" though this pointer that was passed in constructor
-		void AddMessageToIncomeQueue(const Message<T>& message) override
+		void AddMessageToIncomeQueue(const Message<T>& message)
 		{						
 			message_in_.EmplaceBack(message);
 		}
